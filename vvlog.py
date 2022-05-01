@@ -32,31 +32,28 @@ class Vvlog_UX:
         self.lista_de_tempo = []
         self.usuario = 'thiago.acacio'
         self.senha = 'miguel2014'
-        self.arquivoRomaneio = 'romaneios'
-        self.arquivoEntrega = 'entregas'
-        self.arquivoTransferencia = 'Transferencia'
-        self.arquivoJDI = 'JDI'
+        self.arquivos = ['romaneios', 'entregas', 'BASE ']
         self.lDataInicial = (datetime.now()- timedelta(days=1)).strftime('%d-%m-%Y')
         self.lDataFinal = datetime.today().strftime('%d-%m-%Y')
         self.urlUXConsulta = 'http://vvlog.uxdelivery.com.br/Listas/listaconsulta'
         self.urlEntrega = 'http://vvlog.uxdelivery.com.br/Entregas/EntregaConsulta'
-        self.nomeArquivoSaida = ['ROMANEIO','BASE VVLOG TRANSFERENCIA','BASE VVLOG JDI']
+        self.nomeArquivoSaida = ['BASE VVLOG JDI.csv','BASE VVLOG TRANSFERENCIA.csv','BASE ROMANEIO.csv']
 
     def start(self):
-        logger.warning('Limpando pasta...')
-        self.limpa_pasta(self.diretorio_download, self.arquivoRomaneio)
-        self.limpa_pasta(self.diretorio_download, self.arquivoEntrega)
+        self.limpa_pasta(self.diretorio_download, self.arquivos)
         self.carrega_pagina_web()
         self.login()
         self.consulta_romaneio()
         self.aguarda_download(self.diretorio_download)
-        self.nomeRomaneio = self.arquivo_atual(self.arquivoRomaneio, self.diretorio_download)
+        self.nomeRomaneio = self.arquivo_atual(self.arquivos[0], self.diretorio_download)
         romaneios: list = self.filtra_romaneio(self.nomeRomaneio)
         self.listaRomaneiosStr = self.lista_romaneio(romaneios)
         self.navegacao_consulta(self.listaRomaneiosStr)
         self.aguarda_download(self.diretorio_download)
         self.navegacao_Jdi()
         self.aguarda_download(self.diretorio_download)
+        self.renomear_arquivo(self.diretorio_download, self.arquivos, self.nomeArquivoSaida)
+
         time.sleep(1)
         self.driver.quit()
         logger.success('Consulta finalizada com sucesso.')
@@ -482,10 +479,39 @@ class Vvlog_UX:
                     break
                 
     def limpa_pasta(self, caminho, nomeArquivo):
+        logger.warning('Limpando pasta...')
         for f in os.listdir(caminho):
-            if nomeArquivo in f or '.tmp' in f:
+            if nomeArquivo[0] in f or nomeArquivo[1] in f or nomeArquivo[2] in f or '.tmp' in f:
                 os.remove(os.path.join(caminho,f))
-        
+
+    def renomear_arquivo(self, diretorio, nomesOrigem, nomesDestino):
+        logger.info('Renomeando arquivos baixados.')
+        l_arquivos = os.listdir(diretorio)
+        l_datas = []
+        l_nomesOrigem = nomesOrigem
+        l_nomesDestino = nomesDestino
+
+        for arquivo in l_arquivos:
+            if l_nomesOrigem[0] in arquivo or l_nomesOrigem[1] in arquivo:
+                data = os.path.getmtime(os.path.join(os.path.realpath(diretorio), arquivo))
+                l_datas.append((data, arquivo))
+
+        if len(l_datas) >= 3:
+            try:
+                l_datas.sort(reverse=True)
+                # for i in l_datas:
+                #     print(i)
+                for r in range(3):
+                    ult_arquivo = l_datas[r -1]
+                    nome_arquivo = ult_arquivo[1]
+                    caminhoOrigem= os.getcwd() + '\\' + nome_arquivo
+                    caminhoDestino= os.getcwd() + '\\' + l_nomesDestino[r -1]
+                    os.rename(caminhoOrigem, caminhoDestino)
+
+            except:
+                return 'Nenhum arquivo Localizado.'
+        else:
+            logger.warning('Não foi baixados todos os arquivos necessários.')
 
 if __name__ == '__main__':
     executa = Vvlog_UX()

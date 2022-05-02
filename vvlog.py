@@ -4,21 +4,16 @@ from webdriver_manager.chrome import ChromeDriverManager
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.chrome.options import Options
-from selenium.webdriver.common.alert import Alert
 from selenium.webdriver.support.ui import Select
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.common.by import By
 from selenium import webdriver
 from datetime import datetime
 from datetime import timedelta
-from re import L
 from pymsgbox import *
 from loguru import logger
-from cmath import log
 import pandas as pd
 import pyperclip as pc
-from time import sleep
-from random import randint
 import time
 import os
 
@@ -29,11 +24,13 @@ class Vvlog_UX:
         logger.success('Consulta no site iniciado com sucesso.')
         # self.proxy = '10.228.5.31:8080'
         self.diretorio_download = os.getcwd()
+        self.arquivoParametros = os.getcwd() + "\\" + 'Parametros.txt'
+        usuario, senha, dias = self.carrega_parametros(self.arquivoParametros)
         self.lista_de_tempo = []
-        self.usuario = 'thiago.acacio'
-        self.senha = 'miguel2014'
+        self.usuario = usuario
+        self.senha = senha
         self.arquivos = ['romaneios', 'entregas', 'BASE ']
-        self.lDataInicial = (datetime.now()- timedelta(days=1)).strftime('%d-%m-%Y')
+        self.lDataInicial = (datetime.now()- timedelta(days=dias)).strftime('%d-%m-%Y')
         self.lDataFinal = datetime.today().strftime('%d-%m-%Y')
         self.urlUXConsulta = 'http://vvlog.uxdelivery.com.br/Listas/listaconsulta'
         self.urlEntrega = 'http://vvlog.uxdelivery.com.br/Entregas/EntregaConsulta'
@@ -58,6 +55,19 @@ class Vvlog_UX:
         self.driver.quit()
         logger.success('Consulta finalizada com sucesso.')
 
+    def carrega_parametros(self,caminhoArquivo):
+        logger.info('Verificando login e dias de extração.')
+        try:
+            plan = pd.read_table(caminhoArquivo, header=None, sep=":")  # latin-1
+            usr = str(plan[1][0]).strip()
+            senha = str(plan[1][1]).strip()
+            dias = int(plan[1][2])
+            logger.info(f'Usuário: {usr}\nExtração de: {dias}')
+            return usr,senha,dias
+        except:
+            pass
+            logger.warning('Não foi possivel ler o arquivo')
+            
     def carrega_pagina_web(self) -> None:
 
         options = Options()
@@ -265,7 +275,7 @@ class Vvlog_UX:
             bt_buscar.click()
         except:
             pass
-            logger.warning('Elemento textArea não encontrado.')
+            logger.warning('Elemento bt_buscar não encontrado.')
 
         self.barra_progresso(lBarraProgress, lDownload)
 
@@ -365,12 +375,11 @@ class Vvlog_UX:
 
         self.barra_progresso(lBarraProgress, lDownload)
 
-    def lista_romaneio(self, listaRomaneios) -> None:
-        
+    def lista_romaneio(self, listaRomaneios) -> str:
+        romaneiosStr: str = '' 
         if len(listaRomaneios) > 0:
             logger.debug(f'Quantidade Consultas: {len(listaRomaneios)} romaneios')
-            romaneiosStr: str = ''
-            for idx, romaneios in enumerate(listaRomaneios):
+            for romaneios in enumerate(listaRomaneios):
                 romaneiosStr += str(romaneios) + '\n'
         return romaneiosStr
 
@@ -468,6 +477,7 @@ class Vvlog_UX:
                     pa = p
                 if percentual == '100%':
                     logger.debug(f'Carregamento {percentual} Concluido.')
+                    time.sleep(2)
                     try:
                         download_arquivo = self.wait2.until(
                             condicaoEsperada.presence_of_element_located((By.XPATH, lDownload)))

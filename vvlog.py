@@ -62,7 +62,7 @@ class Vvlog_UX:
             usr = str(plan[1][0]).strip()
             senha = str(plan[1][1]).strip()
             dias = int(plan[1][2])
-            logger.info(f'Usuário: {usr}\nExtração de: {dias}')
+            logger.info(f'Usuário: {usr}\nExtração de: {dias} dias')
             return usr,senha,dias
         except:
             pass
@@ -379,7 +379,7 @@ class Vvlog_UX:
         romaneiosStr: str = '' 
         if len(listaRomaneios) > 0:
             logger.debug(f'Quantidade Consultas: {len(listaRomaneios)} romaneios')
-            for romaneios in enumerate(listaRomaneios):
+            for idx ,romaneios in enumerate(listaRomaneios):
                 romaneiosStr += str(romaneios) + '\n'
         return romaneiosStr
 
@@ -403,7 +403,7 @@ class Vvlog_UX:
     def arquivo_atual(self, nomeArquivo, diretorio, indice: int = 1):
         l_arquivos = os.listdir(diretorio)
         l_datas = []
-
+        time.sleep(2)
         for arquivo in l_arquivos:
             if nomeArquivo in arquivo:
                 data = os.path.getmtime(os.path.join(os.path.realpath(diretorio), arquivo))
@@ -438,7 +438,7 @@ class Vvlog_UX:
         fileends = "crdownload"
         logger.info('Downloading em andamento, aguarde...')
         while "crdownload" == fileends:
-            time.sleep(1)
+            time.sleep(2)
             newest_file = self.arquivo_recente(caminho)
             if "crdownload" in newest_file:
                 fileends = "crdownload"
@@ -462,6 +462,7 @@ class Vvlog_UX:
     
     def barra_progresso(self, lBarraProgress, lDownload):
         logger.info('Aguardando barra de progresso')
+        time.sleep(3)
         if self.valida_elemento(By.XPATH, lBarraProgress):
             pa = 0
             while True:
@@ -483,6 +484,7 @@ class Vvlog_UX:
                             condicaoEsperada.presence_of_element_located((By.XPATH, lDownload)))
                         download_arquivo.click()
                         logger.info('Aguardando Download')
+                        time.sleep(2)
                     except:
                         pass
                         logger.warning('Elemento download_arquivo não encontrado.')

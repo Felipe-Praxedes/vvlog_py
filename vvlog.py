@@ -17,7 +17,6 @@ import pyperclip as pc
 import time
 import os
 
-
 class Vvlog_UX:
 
     def __init__(self) -> None:
@@ -30,11 +29,11 @@ class Vvlog_UX:
         self.usuario = usuario
         self.senha = senha
         self.arquivos = ['romaneios', 'entregas', 'BASE ']
-        self.lDataInicial = (datetime.now()- timedelta(days=dias)).strftime('%d-%m-%Y')
+        self.lDataInicial = (datetime.now() - timedelta(days=dias)).strftime('%d-%m-%Y')
         self.lDataFinal = datetime.today().strftime('%d-%m-%Y')
         self.urlUXConsulta = 'http://vvlog.uxdelivery.com.br/Listas/listaconsulta'
         self.urlEntrega = 'http://vvlog.uxdelivery.com.br/Entregas/EntregaConsulta'
-        self.nomeArquivoSaida = ['BASE VVLOG JDI.csv','BASE VVLOG TRANSFERENCIA.csv','BASE ROMANEIO.csv']
+        self.nomeArquivoSaida = ['BASE VVLOG JDI.csv', 'BASE VVLOG TRANSFERENCIA.csv', 'BASE ROMANEIO.csv']
 
     def start(self):
         self.limpa_pasta(self.diretorio_download, self.arquivos)
@@ -55,7 +54,7 @@ class Vvlog_UX:
         self.driver.quit()
         logger.success('Consulta finalizada com sucesso.')
 
-    def carrega_parametros(self,caminhoArquivo):
+    def carrega_parametros(self, caminhoArquivo):
         logger.info('Verificando login e dias de extração.')
         try:
             plan = pd.read_table(caminhoArquivo, header=None, sep=":")  # latin-1
@@ -63,11 +62,11 @@ class Vvlog_UX:
             senha = str(plan[1][1]).strip()
             dias = int(plan[1][2])
             logger.info(f'Usuário: {usr}\nExtração de: {dias} dias')
-            return usr,senha,dias
+            return usr, senha, dias
         except:
             pass
             logger.warning('Não foi possivel ler o arquivo')
-            
+
     def carrega_pagina_web(self) -> None:
 
         options = Options()
@@ -127,13 +126,13 @@ class Vvlog_UX:
         time.sleep(5)
         if self.valida_elemento(By.XPATH, lAlerta):
             tipo_erro = self.wait.until(
-            condicaoEsperada.presence_of_element_located((By.XPATH, lAlerta))).text
+                condicaoEsperada.presence_of_element_located((By.XPATH, lAlerta))).text
             logger.warning('Login não efetuado')
             alert(tipo_erro, "Erro de Login")
             self.driver.quit()
         elif self.valida_elemento(By.XPATH, lCampoVazio):
             erro_campo = self.wait.until(
-            condicaoEsperada.presence_of_element_located((By.XPATH, lCampoVazio)))
+                condicaoEsperada.presence_of_element_located((By.XPATH, lCampoVazio)))
             str_erro: str = ''
             for erro in erro_campo:
                 str_erro + erro.text + '\n'
@@ -141,7 +140,7 @@ class Vvlog_UX:
             logger.warning('Campos Vazios')
             alert(str_erro, "Campos Vazios")
             self.driver.quit()
-        
+
         try:
             self.wait2.until(
                 condicaoEsperada.presence_of_element_located((By.XPATH, lTitulo)))
@@ -151,7 +150,7 @@ class Vvlog_UX:
                 'Tempo de Login atingido.\nVerifique sua conexão e tente novamente.', "Tempo de Login")
             self.driver.quit()
 
-    def consulta_romaneio(self) -> None: #, listaRomaneios: list
+    def consulta_romaneio(self) -> None:  # , listaRomaneios: list
         lSelecionaCancelado: str = '//*[@id="flagCancelado"]'
         lSelecionaSaida: str = '//select[@id="tipoSaida"]'
         lSelecionaTipo: str = '//select[@id="idTipoLista"]'
@@ -202,8 +201,8 @@ class Vvlog_UX:
             selecionar.click()
         except:
             pass
-            logger.warning('Elemento selecionar não encontrado.') 
-            
+            logger.warning('Elemento selecionar não encontrado.')
+
         try:
             selecaoSaida = self.wait2.until(
                 condicaoEsperada.presence_of_element_located((By.XPATH, lSelecionaSaida)))
@@ -211,7 +210,7 @@ class Vvlog_UX:
             selecaoSaida_object.select_by_value('excel')
         except:
             pass
-            logger.warning('Elemento selecaoSaida não encontrado.')    
+            logger.warning('Elemento selecaoSaida não encontrado.')
 
         try:
             bt_buscar = self.wait2.until(
@@ -222,7 +221,7 @@ class Vvlog_UX:
             logger.warning('Elemento bt_buscar não encontrado.')
 
         self.barra_progresso(lBarraProgress, lDownload)
-                
+
     def navegacao_consulta(self, romaneiosStr) -> None:
         lTitulo: str = '/html/body/div[2]/div/section[1]/h1'
         lTipo: str = '//*[@id="tipoBusca"]'
@@ -255,11 +254,11 @@ class Vvlog_UX:
         try:
             pc.copy(romaneiosStr)
             textArea = self.wait2.until(condicaoEsperada.presence_of_element_located((By.XPATH, lTxtArea)))
-            textArea.send_keys(Keys.CONTROL,'v')
+            textArea.send_keys(Keys.CONTROL, 'v')
         except:
             pass
             logger.warning('Elemento textArea não encontrado.')
-        
+
         try:
             selecaoSaida = self.wait2.until(
                 condicaoEsperada.presence_of_element_located((By.XPATH, lSelecionaSaida)))
@@ -267,7 +266,7 @@ class Vvlog_UX:
             selecaoSaida_object.select_by_value('excel')
         except:
             pass
-            logger.warning('Elemento selecaoSaida não encontrado.')    
+            logger.warning('Elemento selecaoSaida não encontrado.')
 
         try:
             bt_buscar = self.wait2.until(
@@ -282,11 +281,12 @@ class Vvlog_UX:
     def navegacao_Jdi(self) -> None:
         lTitulo: str = '/html/body/div[2]/div/section[1]/h1'
         lBotaoFilial: str = '/html/body/div[2]/div/section[2]/div[3]/div[2]/form/div[2]/div[2]/div/div[2]/div[1]/button'
-        lfiltroFilial: str ='/html/body/div[2]/div/section[2]/div[3]/div[2]/form/div[2]/div[2]/div/div[2]/div[1]/ul/div/input'
+        lfiltroFilial: str = '/html/body/div[2]/div/section[2]/div[3]/div[2]/form/div[2]/div[2]/div/div[2]/div[1]/ul/div/input'
         lSelecionaTodos: str = '/html/body/div[2]/div/section[2]/div[3]/div[2]/form/div[2]/div[2]/div/div[2]/div[1]/ul/li[1]/a/label'
         lSelecionaDataInicial = '//*[@id="dtIniSolicitacao"]'
         lSelecionaDataFinal = '//*[@id="dtFimSolicitacao"]'
         lSelecionaSaida: str = '//*[@id="tipoSaida"]'
+        lSelecionaArea: str = '//*[@id="valorBusca"]'
         lBuscar: str = '/html/body/div[2]/div/section[2]/div[3]/div[2]/form/div[2]/div[2]/div/div[15]/input[2]'
         lBarraProgress: str = '//*[@id="barraProgressoExcel"]/div'
         lDownload: str = '//*[@id="btDownload"]'
@@ -301,7 +301,9 @@ class Vvlog_UX:
             alert(
                 'Tempo de Login atingido.\nVerifique sua conexão e tente novamente.', "Tempo de Login")
             self.driver.quit()
-        
+
+        time.sleep(2)
+
         try:
             selecaoDataFinal = self.wait2.until(
                 condicaoEsperada.presence_of_element_located((By.XPATH, lSelecionaDataFinal)))
@@ -321,13 +323,21 @@ class Vvlog_UX:
             logger.warning('Elemento selecaoDataInicial não encontrado.')
 
         try:
+            selecionaArea = self.wait2.until(
+                condicaoEsperada.presence_of_element_located((By.XPATH, lSelecionaArea)))
+            selecionaArea.click()
+        except:
+            pass
+            logger.warning('Elemento area não encontrado.')
+
+        try:
             bt_filial = self.wait2.until(
                 condicaoEsperada.presence_of_element_located((By.XPATH, lBotaoFilial)))
             bt_filial.click()
         except:
             pass
             logger.warning('Elemento bt_filial não encontrado.')
-        
+
         try:
             selecaoFilial = self.wait2.until(
                 condicaoEsperada.presence_of_element_located((By.XPATH, lfiltroFilial)))
@@ -337,8 +347,6 @@ class Vvlog_UX:
             pass
             logger.warning('Elemento selecaoFilial não encontrado.')
 
-        time.sleep(1)
-            
         try:
             selecaoTodos = self.wait2.until(
                 condicaoEsperada.presence_of_element_located((By.XPATH, lSelecionaTodos)))
@@ -346,7 +354,7 @@ class Vvlog_UX:
         except:
             pass
             logger.warning('Elemento selecaoTodos não encontrado.')
-        
+
         try:
             bt_filial = self.wait2.until(
                 condicaoEsperada.presence_of_element_located((By.XPATH, lBotaoFilial)))
@@ -363,7 +371,7 @@ class Vvlog_UX:
             selecaoSaida_object.select_by_value('excel')
         except:
             pass
-            logger.warning('Elemento selecaoSaida não encontrado.')    
+            logger.warning('Elemento selecaoSaida não encontrado.')
 
         try:
             bt_buscar = self.wait2.until(
@@ -376,20 +384,20 @@ class Vvlog_UX:
         self.barra_progresso(lBarraProgress, lDownload)
 
     def lista_romaneio(self, listaRomaneios) -> str:
-        romaneiosStr: str = '' 
+        romaneiosStr: str = ''
         if len(listaRomaneios) > 0:
             logger.debug(f'Quantidade Consultas: {len(listaRomaneios)} romaneios')
-            for idx ,romaneios in enumerate(listaRomaneios):
+            for idx, romaneios in enumerate(listaRomaneios):
                 romaneiosStr += str(romaneios) + '\n'
         return romaneiosStr
 
-    def filtra_romaneio(self,caminhoArquivo):
+    def filtra_romaneio(self, caminhoArquivo):
         logger.info('Extraindo romaneios do data frame')
         df = pd.DataFrame()
         lista_romaneio = []
 
         try:
-            plan = pd.read_csv(caminhoArquivo, sep=';',encoding='latin-1')  # latin-1
+            plan = pd.read_csv(caminhoArquivo, sep=';', encoding='latin-1')  # latin-1
             # df = pd.concat(plan, ignore_index=True)
             # df = df.append(plan, ignore_index=True)
             lista_romaneio = plan['Nro. Romaneio'].to_list()
@@ -397,17 +405,19 @@ class Vvlog_UX:
         except:
             pass
             logger.warning('Não foi possivel ler o arquivo')
-            
+
         return lista_romaneio
 
     def arquivo_atual(self, nomeArquivo, diretorio, indice: int = 1):
         l_arquivos = os.listdir(diretorio)
         l_datas = []
         time.sleep(2)
+        
         for arquivo in l_arquivos:
             if nomeArquivo in arquivo:
                 data = os.path.getmtime(os.path.join(os.path.realpath(diretorio), arquivo))
                 l_datas.append((data, arquivo))
+
         try:
             l_datas.sort(reverse=True)
             # for i in l_datas:
@@ -418,23 +428,23 @@ class Vvlog_UX:
             arq = os.path.join(os.path.realpath(diretorio), nome_arquivo)
             data_mod = self.data_modificacao(arq)
             # return nome_arquivo, data_arquivo
-            caminhoArquivo= os.getcwd() + '\\' + nome_arquivo
+            caminhoArquivo = os.getcwd() + '\\' + nome_arquivo
             return caminhoArquivo
         except:
             return 'Nenhum arquivo Localizado.'
-            
+
     def data_modificacao(self, arquivo):
 
-            ti_m = os.path.getmtime(arquivo) 
-            
-            m_ti = time.ctime(ti_m) 
-            t_obj = time.strptime(m_ti) 
-            T_stamp = time.strftime("%d/%m/%Y %H:%M:%S", t_obj) 
-            
-            logger.info(f"Ultima atualização dop arquivo em {T_stamp}")
-            return T_stamp
+        ti_m = os.path.getmtime(arquivo)
 
-    def aguarda_download(self,caminho): 
+        m_ti = time.ctime(ti_m)
+        t_obj = time.strptime(m_ti)
+        T_stamp = time.strftime("%d/%m/%Y %H:%M:%S", t_obj)
+
+        logger.info(f"Ultima atualização dop arquivo em {T_stamp}")
+        return T_stamp
+
+    def aguarda_download(self, caminho):
         fileends = "crdownload"
         logger.info('Downloading em andamento, aguarde...')
         while "crdownload" == fileends:
@@ -445,7 +455,7 @@ class Vvlog_UX:
             else:
                 fileends = "none"
                 logger.info('Downloading Completo...')
-    
+
     def arquivo_recente(self, caminho):
         path = caminho
         os.chdir(path)
@@ -459,7 +469,7 @@ class Vvlog_UX:
         except NoSuchElementException as e:
             return False
         return True
-    
+
     def barra_progresso(self, lBarraProgress, lDownload):
         logger.info('Aguardando barra de progresso')
         time.sleep(3)
@@ -467,7 +477,7 @@ class Vvlog_UX:
             pa = 0
             while True:
                 percentual = self.wait2.until(
-                            condicaoEsperada.presence_of_element_located((By.XPATH,lBarraProgress))).text
+                    condicaoEsperada.presence_of_element_located((By.XPATH, lBarraProgress))).text
                 try:
                     p = int(percentual.replace("%", ""))
                 except:
@@ -489,12 +499,12 @@ class Vvlog_UX:
                         pass
                         logger.warning('Elemento download_arquivo não encontrado.')
                     break
-                
+
     def limpa_pasta(self, caminho, nomeArquivo):
         logger.warning('Limpando pasta...')
         for f in os.listdir(caminho):
             if nomeArquivo[0] in f or nomeArquivo[1] in f or nomeArquivo[2] in f or '.tmp' in f:
-                os.remove(os.path.join(caminho,f))
+                os.remove(os.path.join(caminho, f))
 
     def renomear_arquivo(self, diretorio, nomesOrigem, nomesDestino):
         logger.info('Renomeando arquivos baixados.')
@@ -514,10 +524,10 @@ class Vvlog_UX:
                 # for i in l_datas:
                 #     print(i)
                 for r in range(3):
-                    ult_arquivo = l_datas[r -1]
+                    ult_arquivo = l_datas[r - 1]
                     nome_arquivo = ult_arquivo[1]
-                    caminhoOrigem= os.getcwd() + '\\' + nome_arquivo
-                    caminhoDestino= os.getcwd() + '\\' + l_nomesDestino[r -1]
+                    caminhoOrigem = os.getcwd() + '\\' + nome_arquivo
+                    caminhoDestino = os.getcwd() + '\\' + l_nomesDestino[r - 1]
                     os.rename(caminhoOrigem, caminhoDestino)
 
             except:
@@ -525,7 +535,7 @@ class Vvlog_UX:
         else:
             logger.warning('Não foi baixados todos os arquivos necessários.')
 
+
 if __name__ == '__main__':
     executa = Vvlog_UX()
     executa.start()
-
